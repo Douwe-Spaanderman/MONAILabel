@@ -1,0 +1,10 @@
+{
+  "version": 1.0,
+  "description": "3D DeepGrow model based on UNET",
+  "type": "deepgrow",
+  "dimension": 3,
+  "engines": [
+    "infer"
+  ],
+  "labels": []
+}
