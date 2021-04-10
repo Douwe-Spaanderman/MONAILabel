@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response, FileResponse
 
-from server.core.config import settings
+from monailabel.core.config import settings
 
 router = APIRouter(
     prefix="/logs",

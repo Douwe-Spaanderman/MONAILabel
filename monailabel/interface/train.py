@@ -14,74 +14,128 @@ class TrainEngine(object):
 
     @abstractmethod
     def device(self):
+        """
+        Provide device name
+        """
         pass
 
     @abstractmethod
     def network(self):
+        """
+        Provide network
+        """
         pass
 
     @abstractmethod
     def loss_function(self):
+        """
+        Provide Lost function
+        """
         pass
 
     @abstractmethod
     def optimizer(self):
+        """
+        Provide Optimizer
+        """
         pass
 
     @abstractmethod
     def train_pre_transforms(self):
+        """
+        Provide List of Pre-Transforms for training
+        """
         pass
 
     @abstractmethod
     def train_post_transforms(self):
+        """
+        Provide List of Post-Transforms for training
+        """
         pass
 
     @abstractmethod
     def train_data_loader(self):
+        """
+        Provide Dataloader for training samples
+        """
         pass
 
     @abstractmethod
     def train_inferer(self):
+        """
+        Provide Inferer to be used while training
+        """
         pass
 
     @abstractmethod
     def train_key_metric(self):
+        """
+        Provide List of Key Metrics to be collected while training
+        """
         pass
 
     @abstractmethod
     def train_handlers(self):
+        """
+        Provide List of training handlers
+        """
         pass
 
     @abstractmethod
     def train_additional_metrics(self):
+        """
+        Provide any additional metrics to be collected while training
+        """
         return None
 
     @abstractmethod
     def val_pre_transforms(self):
+        """
+        Provide List of Pre-Transforms for validation step
+        """
         pass
 
     @abstractmethod
     def val_post_transforms(self):
+        """
+        Provide List of Post-Transforms for validation step
+        """
         pass
 
     @abstractmethod
     def val_inferer(self):
+        """
+        Provide Inferer to be used for validation step
+        """
         pass
 
     @abstractmethod
     def val_data_loader(self):
+        """
+        Provide Dataloader for validation samples
+        """
         pass
 
     @abstractmethod
     def val_handlers(self):
+        """
+        Provide List of handlers for validation
+        """
         pass
 
     @abstractmethod
     def val_key_metric(self):
+        """
+        Provide List of Key metrics to be collected during validation
+        """
         pass
 
     @abstractmethod
     def val_additional_metrics(self):
+        """
+        Provide any additional metrics to be collected while validation
+        """
         return None
 
     def evaluator(self):

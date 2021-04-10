@@ -8,10 +8,10 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
 
-from server.core.config import settings
-from server.endpoints import activelearning, inference, logs, train, info
-from server.utils.app_utils import get_app_instance
-from server.utils.generic import init_log_config
+from monailabel.core.config import settings
+from monailabel.endpoints import activelearning, inference, logs, train, info, download
+from monailabel.utils.app_utils import get_app_instance
+from monailabel.utils.generic import init_log_config
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -34,6 +34,7 @@ app.include_router(info.router)
 app.include_router(inference.router)
 app.include_router(train.router)
 app.include_router(activelearning.router)
+app.include_router(download.router)
 app.include_router(logs.router)
 
 

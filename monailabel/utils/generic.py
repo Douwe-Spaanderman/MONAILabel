@@ -1,4 +1,6 @@
+import hashlib
 import logging
+import mimetypes
 import os
 import shutil
 import subprocess
@@ -51,3 +53,29 @@ def init_log_config(log_config, app_dir, log_file):
             f.write(c)
 
     return log_config
+
+
+def get_mime_type(file):
+    m_type = mimetypes.guess_type(file, strict=False)
+    logger.debug(f"Guessed Mime Type for Image: {m_type}")
+
+    if m_type is None or m_type[0] is None:
+        m_type = "application/octet-stream"
+    else:
+        m_type = f"{m_type[0]}/{m_type[1]}"
+    logger.debug(f"Final Mime Type: {m_type}")
+    return m_type
+
+
+def file_checksum(file, algo="SHA256"):
+    if algo not in ['SHA256', 'SHA512', 'MD5']:
+        raise ValueError("unsupported hashing algorithm %s" % algo)
+
+    with open(file, 'rb') as content:
+        hash = hashlib.new(algo)
+        while True:
+            chunk = content.read(8192)
+            if not chunk:
+                break
+            hash.update(chunk)
+        return hash.hexdigest()

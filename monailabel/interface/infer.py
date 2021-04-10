@@ -5,30 +5,83 @@ from abc import abstractmethod
 
 import torch
 
-from server.interface import ServerError, ServerException
-from server.interface.utils.writer import Writer
+from monailabel.interface.exception import MONAILabelError, MONAILabelException
+from monailabel.interface.utils.writer import Writer
 
 logger = logging.getLogger(__name__)
 
 
 class InferenceEngine(object):
+    """
+    Basic Inference Engine Helper
+    """
+
     def __init__(self, model):
+        """
+        :param model: Pre-Trained Model File (TorchScript)
+        """
         self._model = model
         self._networks = {}
 
     @abstractmethod
     def pre_transforms(self):
+        """
+        Provide List of pre-transforms
+
+            For Example::
+
+                return [
+                    monai.transforms.LoadImaged(keys='image'),
+                    monai.transforms.AddChanneld(keys='image'),
+                    monai.transforms.Spacingd(keys='image', pixdim=[1.0, 1.0, 1.0]),
+                    monai.transforms.ScaleIntensityRanged(keys='image', a_min=-57, a_max=164, b_min=0.0, b_max=1.0, clip=True),
+                ]
+
+        """
         pass
 
     @abstractmethod
     def post_transforms(self):
+        """
+        Provide List of post-transforms
+
+            For Example::
+
+                return [
+                    monai.transforms.AddChanneld(keys='pred'),
+                    monai.transforms.Activationsd(keys='pred', softmax=True),
+                    monai.transforms.AsDiscreted(keys='pred', argmax=True),
+                    monai.transforms.SqueezeDimd(keys='pred', dim=0),
+                    monai.transforms.ToNumpyd(keys='pred'),
+                    monailabel.interface.utils.Restored(keys='pred', ref_image='image'),
+                    monailabel.interface.utils.ExtremePointsd(keys='pred', result='result', points='points'),
+                    monailabel.interface.utils.BoundingBoxd(keys='pred', result='result', bbox='bbox'),
+                ]
+
+        """
         pass
 
     @abstractmethod
     def inferer(self):
+        """
+        Provide Inferer Class
+
+            For Example::
+
+                return monai.inferers.SlidingWindowInferer(roi_size=[160, 160, 160])
+        """
         pass
 
     def run(self, data_file, params, device):
+        """
+        It provides basic implementation to run the following in order
+            - Run Pre Transforms
+            - Run Inferer
+            - Run Post Transforms
+            - Run Writer to save the label mask and result params
+
+        Returns: Label (File Path) and Result Params (JSON)
+        """
         begin = time.time()
         data = copy.deepcopy(params)
         data.update({'image': data_file, 'image_path': data_file, 'params': params})
@@ -59,6 +112,17 @@ class InferenceEngine(object):
         return result_file_name, result_json
 
     def run_inferer(self, data, convert_to_batch=True, device='cuda', input_key='image', output_key='pred'):
+        """
+        Run Inferer over pre-processed Data.  Derive this logic to customize the normal behavior.
+        In some cases, you want to implement your own for running chained inferers over pre-processed data
+
+        :param data: pre-processed data
+        :param convert_to_batch: convert input to batched input
+        :param device: device type run load the model and run inferer
+        :param input_key: input key in data to feed it to inferer
+        :param output_key: output key to store the predictions
+        :return: updated data with output_key stored that will be used for post-processing
+        """
         logger.info('Running Inferer')
         inputs = data[input_key]
         inputs = inputs if torch.is_tensor(inputs) else torch.from_numpy(inputs)
@@ -84,6 +148,17 @@ class InferenceEngine(object):
         return data
 
     def writer(self, data, image='pred', text='result', image_ext=None, image_dtype=None):
+        """
+        You can provide your own writer.  However this writer saves the prediction/label mask to file
+        and fetches result json
+
+        :param data: typically it is post processed data
+        :param image: image that needs to be written
+        :param text: text field from data which represents result params
+        :param image_ext: output image extension
+        :param image_dtype: output image dtype
+        :return: tuple of output_file and result_json
+        """
         logger.info('Writing Result')
         if image_ext is not None:
             data['result_extension'] = image_ext
@@ -113,6 +188,13 @@ class InferenceEngine(object):
         return '; '.join(shape_info)
 
     def run_transforms(self, data, transforms, log_prefix='POST'):
+        """
+        Run Transforms
+        :param data: Input data dictionary
+        :param transforms: List of transforms to run
+        :param log_prefix: Logging prefix (POST or PRE)
+        :return: Processed data after running transforms
+        """
         logger.info('{} - Run Transforms'.format(log_prefix))
         logger.info('{} - Input Keys: {}'.format(log_prefix, data.keys()))
 
@@ -127,7 +209,7 @@ class InferenceEngine(object):
             if callable(t):
                 data = t(data)
             else:
-                raise ServerException(ServerError.INFERENCE_ERROR, "Transformer '{}' is not callable".format(
+                raise MONAILabelException(MONAILabelError.INFERENCE_ERROR, "Transformer '{}' is not callable".format(
                     t.__class__.__name__))
 
             logger.info("{} - Transform ({}): Time: {:.4f}; {}".format(

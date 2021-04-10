@@ -4,8 +4,8 @@ import logging
 from fastapi import APIRouter, HTTPException
 from starlette.background import BackgroundTasks
 
-from server.interface import MONAIApp
-from server.utils.app_utils import get_app_instance
+from monailabel.interface import MONAILabelApp
+from monailabel.utils.app_utils import get_app_instance
 
 logger = logging.getLogger(__name__)
 task = None
@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 def train_func(request):
-    instance: MONAIApp = get_app_instance()
+    instance: MONAILabelApp = get_app_instance()
     return instance.train(request)
 
 

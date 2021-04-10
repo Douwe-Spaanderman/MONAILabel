@@ -1,6 +1,5 @@
 import json
 import logging
-import mimetypes
 import os
 from enum import Enum
 from typing import Optional
@@ -11,8 +10,9 @@ from fastapi.responses import FileResponse, Response
 from requests_toolbelt import MultipartEncoder
 from starlette.background import BackgroundTasks
 
-from server.interface import MONAIApp
-from server.utils.app_utils import get_app_instance
+from monailabel.interface import MONAILabelApp
+from monailabel.utils.app_utils import get_app_instance
+from monailabel.utils.generic import get_mime_type
 
 logger = logging.getLogger(__name__)
 
@@ -83,17 +83,10 @@ def send_response(result, output, background_tasks):
         return res_json
 
     background_tasks.add_task(remove_file, res_img)
-    m_type = mimetypes.guess_type(res_img, strict=False)
-    logger.debug(f"Guessed Mime Type for Image: {m_type}")
-
-    if m_type is None or m_type[0] is None:
-        m_type = "application/octet-stream"
-    else:
-        m_type = f"{m_type[0]}/{m_type[1]}"
-    logger.debug(f"Final Mime Type: {m_type}")
+    m_type = get_mime_type(res_img)
 
     if res_json is None or not len(res_json) or output == 'image':
-        return FileResponse(res_img, media_type=m_type)
+        return FileResponse(res_img, media_type=m_type, filename=os.path.basename(res_img))
 
     res_fields = dict()
     res_fields['params'] = (None, json.dumps(res_json), 'application/json')
@@ -105,15 +98,24 @@ def send_response(result, output, background_tasks):
 
 # TODO:: Define request uri for (model, image, params)
 @router.post("/{model}", summary="Run Inference for supported model")
-async def run_inference(background_tasks: BackgroundTasks, model, output: Optional[ResultType] = None):
+async def run_inference(
+        background_tasks: BackgroundTasks,
+        model: str,
+        image: str,
+        params: Optional[dict] = None,
+        config: Optional[dict] = None,
+        output: Optional[ResultType] = None):
     request = {
         "model": model,
-        "image": "imagesTr/spleen_2.nii.gz",
-        "params": {}
+        "image": image,
+        "params": params if params is not None else {}
     }
 
+    if config is not None:
+        request.update(config)
+
     logger.info(f"Infer Request: {request}")
-    instance: MONAIApp = get_app_instance()
+    instance: MONAILabelApp = get_app_instance()
     result = instance.infer(request)
 
     logger.info(f"Infer Result: {result}")

@@ -37,4 +37,4 @@ python3 ${DIR}/main.py "$@"
 deactivate
 
 # TEST::
-# ./start_monai_label.sh -a ../apps/segmentation_spleen
+# ./start_monai_label.sh -a ../apps/my_app
