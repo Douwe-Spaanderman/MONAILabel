@@ -1216,6 +1216,11 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         start = time.time()
         try:
+            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4]:
+                button.setAutoExclusive(False)
+                button.setChecked(False)
+                button.setAutoExclusive(True)
+
             qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
 
             self.updateServerSettings()
@@ -1394,13 +1399,25 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         if self.current_sample.get("session"):
             if not self.onUploadImage(init_sample=False):
                 return
-
         try:
             qt.QApplication.setOverrideCursor(qt.Qt.WaitCursor)
             segmentationNode = self._segmentNode
             segmentation = segmentationNode.GetSegmentation()
             totalSegments = segmentation.GetNumberOfSegments()
             segmentIds = [segmentation.GetNthSegmentID(i) for i in range(totalSegments)]
+
+            # Check the score assigned
+            scores = []
+            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4]:
+                scores.append(button.isChecked())
+
+            meaning = ["Major errors", "Minor errors, clinically relevant", "Minor errors, clinically irrelevant", "No errors"]
+
+            if any(scores):
+                score = [i for i, x in enumerate(scores) if x][0]
+                score = meaning[score]
+            else:
+                score = "No score given"
 
             # remove background and scribbles labels
             label_info = []
@@ -1434,7 +1451,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.reportProgress(30)
 
             self.updateServerSettings()
-            result = self.logic.save_label(self.current_sample["id"], label_in, {"label_info": label_info})
+            result = self.logic.save_label(self.current_sample["id"], label_in, {"label_info": label_info, "Clinical score": score})
             self.fetchInfo()
 
             if slicer.util.settingsValue("MONAILabel/autoUpdateModelV2", False, converter=slicer.util.toBool):
