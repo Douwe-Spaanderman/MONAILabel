@@ -163,7 +163,7 @@ class DICOMWebDatastore(LocalDatastore):
                 )
         return image_series
 
-    def get_unlabeled_images(self, label_tag: Optional[str] = None, labels: Optional[List[str]] = None) -> List[str]:
+    def get_unlabeled_images(self, label_tag: Optional[str] = None, labels: Optional[List[str]] = None, tag: str = DefaultLabelTag.FINAL) -> List[str]:
         series = self.list_images()
 
         seg_series = self.get_labeled_images()
