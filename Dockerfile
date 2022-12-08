@@ -16,7 +16,7 @@
 ARG MONAI_IMAGE=projectmonai/monai:1.0.1
 
 FROM ${MONAI_IMAGE} as build
-LABEL maintainer="monai.contact@gmail.com"
+LABEL maintainer="dspaanderman@gmail.com"
 ARG BUILD_OHIF=true
 
 ADD . /opt/monailabel/
@@ -26,8 +26,12 @@ RUN python -m pip install --upgrade --no-cache-dir pip setuptools wheel twine \
     && BUILD_OHIF=${BUILD_OHIF} python setup.py sdist bdist_wheel --build-number $(date +'%Y%m%d%H%M')
 
 FROM ${MONAI_IMAGE}
-LABEL maintainer="monai.contact@gmail.com"
+LABEL maintainer="dspaanderman@gmail.com"
 
 COPY --from=build /opt/monailabel/dist/monailabel* /opt/monailabel/dist/
 RUN python -m pip install --upgrade --no-cache-dir pip \
     && python -m pip install /opt/monailabel/dist/monailabel*.whl
+
+COPY . /opt/app
+WORKDIR /opt/app
+RUN pip install -r requirements-app.txt
