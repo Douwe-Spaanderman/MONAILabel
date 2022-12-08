@@ -19,6 +19,7 @@ import traceback
 from collections import OrderedDict
 from urllib.parse import quote_plus
 
+import getpass
 import ctk
 import qt
 import SampleData
@@ -84,7 +85,7 @@ class _ui_MONAILabelSettingsPanel:
         )
 
         clientId = qt.QLineEdit()
-        clientId.setText("user-xyz")
+        clientId.setText(getpass.getuser())
         clientId.toolTip = "Client/User ID that will be sent to MONAI Label server for reference"
         groupLayout.addRow("Client/User-ID:", clientId)
         parent.registerProperty("MONAILabel/clientId", clientId, "text", str(qt.SIGNAL("textChanged(QString)")))
@@ -604,7 +605,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         )
         if current_annotation_mode == "competetive":
             current = datastore_stats.get("label_tags", {}).get(
-                slicer.util.settingsValue("MONAILabel/clientId", "user-xyz"), 0
+                slicer.util.settingsValue("MONAILabel/clientId", getpass.getuser()), 0
             )
         else:
             current = datastore_stats.get("completed", 0)
@@ -1034,7 +1035,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     def updateServerSettings(self):
         self.logic.setServer(self.serverUrl())
         # This needs to be
-        self.logic.setClientId(slicer.util.settingsValue("MONAILabel/clientId", "user-xyz"))
+        self.logic.setClientId(slicer.util.settingsValue("MONAILabel/clientId", getpass.getuser()))
         self.saveServerUrl()
 
     def serverUrl(self):
@@ -1468,7 +1469,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             )
             # This needs to be changed
             tag = (
-                slicer.util.settingsValue("MONAILabel/clientId", "user-xyz")
+                slicer.util.settingsValue("MONAILabel/clientId", getpass.getuser())
                 if current_annotation_mode == "competetive"
                 else ""
             )
@@ -2159,7 +2160,7 @@ class MONAILabelLogic(ScriptedLoadableModuleLogic):
         self.server_url = server_url if server_url else "http://127.0.0.1:8000"
 
     def setClientId(self, client_id):
-        self.client_id = client_id if client_id else "user-xyz"
+        self.client_id = client_id if client_id else getpass.getuser()
 
     def setProgressCallback(self, progress_callback=None):
         self.progress_callback = progress_callback
