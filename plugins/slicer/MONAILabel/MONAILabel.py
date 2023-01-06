@@ -1228,11 +1228,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         start = time.time()
         try:
-<<<<<<< HEAD
             for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4, self.ui.SegScore5]:
-=======
-            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4]:
->>>>>>> 153ade10393be23acafaf57062ab8cfdd31ff0af
                 button.setAutoExclusive(False)
                 button.setChecked(False)
                 button.setAutoExclusive(True)
@@ -1424,7 +1420,6 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
             # Check the score assigned
             scores = []
-<<<<<<< HEAD
             for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4, self.ui.SegScore5]:
                 scores.append(button.isChecked())
 
