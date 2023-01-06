@@ -1,5 +1,0 @@
-GeodisTK==0.1.7
-nibabel==4.0.2
-numpy==1.22.2
-numpymaxflow==0.0.5
-scikit-image==0.19.3

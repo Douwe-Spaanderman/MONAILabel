@@ -1228,7 +1228,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         start = time.time()
         try:
-            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4]:
+            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4, self.ui.SegScore5]:
                 button.setAutoExclusive(False)
                 button.setChecked(False)
                 button.setAutoExclusive(True)
@@ -1420,10 +1420,10 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
             # Check the score assigned
             scores = []
-            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4]:
+            for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4, self.ui.SegScore5]:
                 scores.append(button.isChecked())
 
-            meaning = ["Major errors", "Minor errors, clinically relevant", "Minor errors, clinically irrelevant", "No errors"]
+            meaning = ["Excellent", "Sufficient", "Insufficient", "Incorrect", "Cannot locate tumor"]
 
             if any(scores):
                 score = [i for i, x in enumerate(scores) if x][0]
