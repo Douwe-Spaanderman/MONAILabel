@@ -1242,6 +1242,8 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 return
 
             sample = self.logic.next_sample(strategy, self.getParamsFromConfig("activelearning", strategy))
+            self.start_time = time.time()
+
             logging.debug(sample)
             if not sample.get("id"):
                 slicer.util.warningDisplay(
@@ -1473,7 +1475,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 if current_annotation_mode == "competetive"
                 else ""
             )
-            result = self.logic.save_label(self.current_sample["id"], label_in, {"label_info": label_info, "Clinical score": score}, tag)
+            result = self.logic.save_label(self.current_sample["id"], label_in, {"label_info": label_info, "Clinical score": score, "Start time": int(self.start_time), "Submit time": int(self.submit_time), "Finished time": int(time.time())}, tag)
 
             self.fetchInfo()
 
@@ -1549,6 +1551,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         logging.info(f"Time consumed by segmentation: {time.time() - start:3.1f}")
 
     def onUpdateDeepgrow(self):
+        self.submit_time = time.time()
         self.onClickDeepgrow(None)
 
     def onClickDeepgrow(self, current_point, skip_infer=False):
