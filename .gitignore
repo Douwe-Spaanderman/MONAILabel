@@ -166,3 +166,5 @@ junit
 test-output.xml
 studies
 tests/data
+apps/
+datasets/

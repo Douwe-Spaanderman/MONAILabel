@@ -559,7 +559,11 @@
            <bool>true</bool>
           </property>
           <property name="text">
+<<<<<<< HEAD
             <string>Excellent (1)</string>
+=======
+            <string>Major errors (1)</string>
+>>>>>>> 153ade10393be23acafaf57062ab8cfdd31ff0af
           </property>
         </widget>
       </item>
@@ -569,7 +573,11 @@
            <bool>true</bool>
           </property>
           <property name="text">
+<<<<<<< HEAD
             <string>Sufficient (2)</string>
+=======
+            <string>Minor errors, clinically relevant (2)</string>
+>>>>>>> 153ade10393be23acafaf57062ab8cfdd31ff0af
           </property>
         </widget>
       </item>
@@ -579,7 +587,11 @@
            <bool>true</bool>
           </property>
           <property name="text">
+<<<<<<< HEAD
             <string>Insufficient (3)</string>
+=======
+            <string>Minor errors, clinically irrelevant (3)</string>
+>>>>>>> 153ade10393be23acafaf57062ab8cfdd31ff0af
           </property>
         </widget>
       </item>
