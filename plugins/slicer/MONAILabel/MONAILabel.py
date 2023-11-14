@@ -18,6 +18,7 @@ import time
 import traceback
 from collections import OrderedDict
 from urllib.parse import quote_plus
+from functools import partial
 
 import getpass
 import ctk
@@ -283,6 +284,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.segmentationButton.setIcon(self.icon("segment.png"))
         self.ui.nextSampleButton.setIcon(self.icon("segment.png"))
         self.ui.saveLabelButton.setIcon(self.icon("save.png"))
+        self.ui.saveadjLabelButton.setIcon(self.icon("save.png"))
         self.ui.trainingButton.setIcon(self.icon("training.png"))
         self.ui.stopTrainingButton.setIcon(self.icon("stop.png"))
         self.ui.uploadImageButton.setIcon(self.icon("upload.svg"))
@@ -312,7 +314,8 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.nextSampleButton.connect("clicked(bool)", self.onNextSampleButton)
         self.ui.trainingButton.connect("clicked(bool)", self.onTraining)
         self.ui.stopTrainingButton.connect("clicked(bool)", self.onStopTraining)
-        self.ui.saveLabelButton.connect("clicked(bool)", self.onSaveLabel)
+        self.ui.saveLabelButton.connect("clicked(bool)", partial(self.onSaveLabel, False))
+        self.ui.saveadjLabelButton.connect("clicked(bool)", partial(self.onSaveLabel, True))
         self.ui.uploadImageButton.connect("clicked(bool)", self.onUploadImage)
         self.ui.importLabelButton.connect("clicked(bool)", self.onImportLabel)
         self.ui.labelComboBox.connect("currentIndexChanged(int)", self.onSelectLabel)
@@ -641,6 +644,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.segmentationModelSelector.currentText and self._volumeNode is not None
         )
         self.ui.saveLabelButton.setEnabled(self._segmentNode is not None)
+        self.ui.saveadjLabelButton.setEnabled(self._segmentNode is not None)
         self.ui.importLabelButton.setEnabled(self._segmentNode is not None)
 
         # Create empty markup point list node for deep grow +ve and -ve
@@ -1228,6 +1232,11 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
         start = time.time()
         try:
+            for button in [self.ui.Diagnosis1, self.ui.Diagnosis2]:
+                button.setAutoExclusive(False)
+                button.setChecked(False)
+                button.setAutoExclusive(True)
+
             for button in [self.ui.SegScore1, self.ui.SegScore2, self.ui.SegScore3, self.ui.SegScore4, self.ui.SegScore5]:
                 button.setAutoExclusive(False)
                 button.setChecked(False)
@@ -1404,7 +1413,7 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             qt.QApplication.restoreOverrideCursor()
             slicer.util.errorDisplay("Failed to import label", detailedText=traceback.format_exc())
 
-    def onSaveLabel(self):
+    def onSaveLabel(self, adj=False, checked=False):
         start = time.time()
         labelmapVolumeNode = None
         result = None
@@ -1419,6 +1428,19 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             segmentation = segmentationNode.GetSegmentation()
             totalSegments = segmentation.GetNumberOfSegments()
             segmentIds = [segmentation.GetNthSegmentID(i) for i in range(totalSegments)]
+
+            #Check the phenotype assigned
+            phenotypes = []
+            for button in [self.ui.Diagnosis1, self.ui.Diagnosis2]:
+                phenotypes.append(button.isChecked())
+
+            meaning = ["Lipoma", "ALT"]
+
+            if any(phenotypes):
+                phenotype = [i for i, x in enumerate(phenotypes) if x][0]
+                phenotype = meaning[phenotype]
+            else:
+                phenotype = "No score given"
 
             # Check the score assigned
             scores = []
@@ -1475,7 +1497,14 @@ class MONAILabelWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
                 if current_annotation_mode == "competetive"
                 else ""
             )
-            result = self.logic.save_label(self.current_sample["id"], label_in, {"label_info": label_info, "Clinical score": score, "Start time": int(self.start_time), "Submit time": int(self.submit_time), "Finished time": int(time.time())}, tag)
+
+            if adj:
+                if tag:
+                    tag += "_adjusted"
+                else:
+                    tag = "adjusted"
+
+            result = self.logic.save_label(self.current_sample["id"], label_in, {"label_info": label_info, "Clinical score": score, "Phenotype": phenotype, "Start time": int(self.start_time), "Submit time": int(self.submit_time), "Finished time": int(time.time())}, tag)
 
             self.fetchInfo()
 
